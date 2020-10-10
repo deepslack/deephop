@@ -1,7 +1,5 @@
 # --*-- coding: utf-8 --*--
-# util.py
-# Copyright (c) 2020 Guangzhou fermion Technology Co.,Ltd. All rights reserved.
-# create by aht  2020/7/15 上午10:55
+
 import os
 
 def find_best_model_checkpoint(model_save_dir):

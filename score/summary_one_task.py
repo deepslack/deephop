@@ -1,20 +1,11 @@
 # --*-- coding: utf-8 --*--
-# summary_one_task.py
-# Copyright (c) 2020 Guangzhou fermion Technology Co.,Ltd. All rights reserved.
-# create by aht  2020/7/8 上午10:32
+
 from train import eval_test, TASKS
 import os
 import pandas as pd
 import numpy as np
 
 from util import find_best_model_checkpoint
-
-
-def summary_multi_task():
-    mt_dir = '/model/total_mtr'
-    df = summary_one_dataset(mt_dir, TASKS)
-    df.to_csv('/home/aht/paper_code/shaungjia/code/score/4次实验结果/mtdnn_.csv', index=False)
-
 
 def summary_one_dataset(mt_dir, tasks_under_dir):
     df_list = []
@@ -47,9 +38,5 @@ def summary_per_task():
         df = summary_one_dataset(os.path.join(base_dir, f), [f[:-2]])
         df_list.append(df)
     total_df = pd.concat(df_list, axis=0)
-    total_df.to_csv('/home/aht/paper_code/shaungjia/code/score/4次实验结果/mtdnn_per_task.csv', index=False)
+    total_df.to_csv('/home/aht/paper_code/shaungjia/code/score/result_experiment/mtdnn_per_task.csv', index=False)
 
-
-if __name__ == '__main__':
-    summary_multi_task()
-    pass

@@ -1,7 +1,5 @@
 # --*-- coding: utf-8 --*--
-# train.py
-# Copyright (c) 2020 Guangzhou fermion Technology Co.,Ltd. All rights reserved.
-# create by aht  2020/5/14 下午4:05
+
 import shutil
 from argparse import ArgumentParser
 from functools import partial
@@ -18,7 +16,6 @@ from data_loader import load_data_frame
 import tensorflow as tf
 
 # from evaluate import evaluate_predictions
-from mpnn import Mpnn
 from mtdnn import Mtdnn
 
 BATCH_SIZE = 128
@@ -38,16 +35,12 @@ def save_loss(writer, end_of_epoch, val_dataset, model, n_iter, batch_loss) -> b
         result = model.predict(val_dataset)
         val_loss = loss_np(result, val_dataset.y)
         writer.add_scalar('val_loss', val_loss, n_iter)
-        # 每 5 次评估一下val上的R2
         if epoch > 0 and epoch % MONITOR_VAL_PER_EPOCH == 0:
-            # 求R2, 判断能否停止
-            # r2 = evaluate_predictions(result.tolist(), val_dataset.y.tolist(), result.shape[1])
             rmse = np.sqrt(val_loss)
             writer.add_scalar('val_rmse', rmse, n_iter)
 
             global r2_score_of_latest
             r2_score_of_latest.append(rmse)
-            # 4次RMSE没有下降,就停止
             if len(r2_score_of_latest) >= 5:
                 should_early_stop = all([r2_score_of_latest[-i] >= r2_score_of_latest[-5] for i in range(1, 5)])
                 return should_early_stop
@@ -65,21 +58,6 @@ def eval(val_dataset, metrics, model):
     r2_score(result, val_dataset.y)
     # 9910 * 152 * 1
     return loss
-    # return model.evaluate(val_dataset, metrics, per_task_metrics=True)
-
-
-# def get_tasks(data_file_dir):
-#     tasks = []
-#     for file in os.listdir(data_file_dir):
-#         task = file.split('.')[0]
-#         tasks.append(task)
-#     tasks.sort()
-#     return tasks
-
-
-# TASKS = get_tasks('/home/aht/paper_code/shaungjia/score_train_data')
-# # TASKS=['CHEMBL1075104']
-# TOTAL_TASK = len(TASKS)
 
 TASKS = ['CHEMBL1075104', 'CHEMBL1075126', 'CHEMBL1075167', 'CHEMBL1163101', 'CHEMBL1293228', 'CHEMBL1741200',
          'CHEMBL1824', 'CHEMBL1841', 'CHEMBL1868', 'CHEMBL1906', 'CHEMBL1907600', 'CHEMBL1907601', 'CHEMBL1907602',
@@ -181,7 +159,6 @@ def train(data_file_dir, save_dir, data_mode, tasks=None):
             dc.utils.save.save_dataset_to_disk(data_save_path, train_dataset, val_dataset, val_dataset,
                                                dc.trans.NormalizationTransformer(transform_y=True, dataset=val_dataset,
                                                                                  move_mean=False))
-            # copy 一份,不然不能load
             shutil.copytree(os.path.join(data_save_path, 'test_dir'), os.path.join(data_save_path, 'valid_dir'))
 
     ite_per_epoch = len(train_dataset) // BATCH_SIZE
@@ -287,7 +264,7 @@ def eval_test(model_save_dir, checkpoint, tasks):
 
 def summary(label, pred, tasks):
     count_dict = {"target": [], "r2": [], "total_val": [], "mse": [], "rmse": []}
-    # 统计各个靶标的R2
+    # get R2 per targets
     for i, task in enumerate(tasks):
         label_list = label[i].to_list()
         pred_list = pred[i].to_list()
@@ -305,60 +282,18 @@ def summary(label, pred, tasks):
     return pd.DataFrame(count_dict)
 
 
-def tmp_use():
-    # d = '/home/aht/paper_code/shaungjia/code/score/model/do_chemprop/ multi_task/model_graph_only/all_mtr/'
-    import data_loader
-    df_label = data_loader.load_data_frame(
-        "/home/aht/paper_code/shaungjia/code/score/model/do_chemprop/multi_task/data/all_mtr/test.csv")
-    with open(
-            "/home/aht/paper_code/shaungjia/code/score/model/do_chemprop/multi_task/model_rd200/all_mtr/preds.csv") as reader:
-        header = reader.readline()
-        columns = [s for s in df_label.columns]
-        columns.insert(1, "label")
-        df_pred = pd.read_csv(reader, delimiter=',', header=None, names=columns)
-    del df_label["smiles"]
-    del df_pred["smiles"]
-    del df_pred["label"]
-    df_pred.columns = [i for i in range(TOTAL_TASK)]
-    df_label.columns = [i for i in range(TOTAL_TASK)]
-
-    summary(df_label, df_pred,
-            "/home/aht/paper_code/shaungjia/code/score/model/do_chemprop/multi_task/model_rd200/eval.csv")
-
-
-def tmp_use1():
-    d = '/home/aht/tw/系统验收/模型更新-202004_最新code/cmpnn'
-    n1 = np.loadtxt(f"{d}/label.txt")
-    n2 = np.loadtxt(f"{d}/pred.txt")
-    df_label = pd.DataFrame(n1, columns=[i for i in range(TOTAL_TASK)])
-    df_pred = pd.DataFrame(n2, columns=[i for i in range(TOTAL_TASK)])
-    summary(df_label, df_pred, f"{d}/eval.csv")
-
-
 if __name__ == '__main__':
-    # train('/home/aht/paper_code/shaungjia/code/score/CHEMBL4005.csv', 'model/8')
-    # train('/home/aht/paper_code/shaungjia/code/score/CHEMBL1075104.csv', 'model/10')
-    # train('/home/aht/paper_code/shaungjia/code/score/total.csv', 'model/10_gcn_decay_with_min_2')
-    # train('/home/aht/paper_code/shaungjia/code/score/total.csv', 'model/11_deep_gcn')
-    # train('/home/aht/paper_code/shaungjia/code/score/total.csv', 'model/12_gcn')
-    # get_score('model/mtdnn', 'model/mtdnn/ckpt-105')
-    # get_score('model/10_gcn_decay_with_min_2', 'model/10_gcn_decay_with_min_2/ckpt-278')
-    # get_score('model/10_gcn_decay_with_min', 'model/10_gcn_decay_with_min/ckpt-279')
-    # prepre_data('/home/aht/paper_code/shaungjia/score_train_data')
-    # tmp_use1()
-    # tmp_use()
     parser = ArgumentParser(conflict_handler='resolve', description='Configure')
     # data_file_dir, save_dir
     parser.add_argument('--data_file_dir', type=str,
                         default='/home/aht/paper_code/shaungjia/code/score/model/do_chemprop/data/total_mtr',
-                        help='benchmark数据的目录')
+                        help='train data directory')
     parser.add_argument('--result_dir', type=str,
                         default='/home/aht/paper_code/shaungjia/code/score/model/total_mtr',
-                        help='运行结果目录')
-    parser.add_argument('--only_summary', action='store_true', default=False, help='直接统计,不做任何的训练')
+                        help='the directory as output(models, tensorboard event file etc.)')
     parser.add_argument('--data_mode', type=str, default='should_split', choices=['splitted', 'should_split'],
-                        help='数据格式 splitted 表示每个数据集合已经使用seed划分好了,不需要重新划分, should_split 表示需要重新划分数据')
-    parser.add_argument('--per_task', action='store_true', default=False, help='是否是一个口袋训练一个模型')
+                        help='splitted: data has been splitted, should_split: the data is raw, splitting is required')
+    parser.add_argument('--per_task', action='store_true', default=False, help='Does one target trains one model')
     args = parser.parse_args()
 
     if args.per_task:
@@ -367,10 +302,8 @@ if __name__ == '__main__':
                 data_file_dir = os.path.join(args.data_file_dir, f'{ds}/seed{seed}')
                 result_dir = os.path.join(args.result_dir, f'{ds}/seed{seed}')
                 train(data_file_dir, result_dir, args.data_mode, tasks=[ds[0:-2]])
-                # 加载模型在test集合上评估
     else:
         for seed in range(0, 3):
             data_file_dir = os.path.join(args.data_file_dir, f'seed{seed}')
             result_dir = os.path.join(args.result_dir, f'seed{seed}')
             train(data_file_dir, result_dir, args.data_mode)
-            # 加载模型在test集合上评估

@@ -1,7 +1,5 @@
 # --*-- coding: utf-8 --*--
-# mtdnn.py
-# Copyright (c) 2020 Guangzhou fermion Technology Co.,Ltd. All rights reserved.
-# create by aht  2020/5/19 上午10:59
+
 import collections
 import logging
 import time

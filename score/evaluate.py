@@ -1,7 +1,5 @@
 # --*-- coding: utf-8 --*--
-# evaluate.py
-# Copyright (c) 2020 Guangzhou fermion Technology Co.,Ltd. All rights reserved.
-# create by aht  2020/7/6 下午2:10
+
 from argparse import ArgumentParser
 
 import deepchem as dc
@@ -17,7 +15,6 @@ import tensorflow as tf
 import os, time
 
 
-# 选出55 CHEMBL2835 这一个口袋做baseline
 def eval_one_mol(smiles, model_save_dir_root, gpu):
     # smiles = Chem.MolToSmiles(mol, isomericSmiles=True)
     featurizer = dc.feat.CircularFingerprint(size=1024)
@@ -67,14 +64,14 @@ def eval_test(model_save_dir_root, test_file, pred_path, gpu):
         else:
             pred = pd.DataFrame(result)
         pred['smiles'] = test_dataset.ids.tolist()
-        # 纯粹是为了冒充列数,没有实际意义
+        # dummmy column for next pipeline
         pred['label'] = 0
         pred_list.append(pred)
     pred = pd.concat(pred_list)
     score_colnames = [c for c in pred.columns]
     score_colnames.remove('smiles')
     score_colnames.remove('label')
-    # 求得3个模型的平均值作为最终的score
+    # average the values from 3 models as the score
     pred.groupby(['smiles'], sort=False)[score_colnames].apply(lambda x: mean(x))
     # pred = pred.reset_index()
     cols = ['smiles', 'label']
@@ -153,13 +150,13 @@ if __name__ == '__main__':
     parser = ArgumentParser(conflict_handler='resolve', description='Configure')
     parser.add_argument('--test_path', type=str,
                         default='/home/aht/paper_code/shaungjia/code/score/model/do_chemprop/data/total_mtr',
-                        help='benchmark数据的目录')
+                        help='the directory of test data')
     parser.add_argument('--preds_path', type=str,
                         default='/home/aht/paper_code/shaungjia/code/score/model/total_mtr',
-                        help='运行结果目录')
-    parser.add_argument('--model_save_dir', type=str, help='模型保存的目录')
-    parser.add_argument('--gpu', type=int, default=0, help='运行的GPU')
-    parser.add_argument('--scorer_pipe_server', action='store_true', default=False, help='以命名管道方式接受客户端的请求')
+                        help='output directory')
+    parser.add_argument('--model_save_dir', type=str, help='the model saved directory')
+    parser.add_argument('--gpu', type=int, default=0, help='GPU rank')
+    parser.add_argument('--scorer_pipe_server', action='store_true', default=False, help='accept the request of clients by named pipe')
 
     args = parser.parse_args()
     if args.scorer_pipe_server:
