@@ -110,9 +110,7 @@ class TransformerEncoder(EncoderBase):
             d_model += condition_dim
         self.layer_norm = onmt.modules.LayerNorm(d_model)
 
-        self.gcn = GATGATE(21, 256, 4, 2)
-        # coors, out_channels_1, out_features
-        # self.gcn = Graph3dConv(3, 160, 256, label_dim=21)
+        self.gcn = Graph3dConv(3, 160, 256, label_dim=21)
         if arch == 'before_linear':
             self.fc = nn.Linear(512+self.condition_dim, 256)
         if arch == 'transformer':
