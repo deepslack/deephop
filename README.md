@@ -28,7 +28,7 @@ environment for deephop is named deephop_env
 cd /data/u1/projects/mget_3d
 conda activate deephop_env
 ```
-you can use make_pairs.py to generate hopping pairs.
+you can use make_pair.py to generate hopping pairs.
 
 ## Dataset split
 ```shell script
