@@ -101,13 +101,13 @@ def make_pair(df, smilarity_2d_threshold: float = 0.6, smilarity_3d_threshold: f
     # loc = df.columns.get_loc("pchembl_value")
     p_value_list = list(df['pchembl_value'])
     step_1_pairs = []
-    # 先制作pair,然后分割
+    # first making pair，then splitting
     for j, ref in enumerate(smiles_list):
         for k in range(j + 1, total):
             # target = smiles_list[k]
             delta_p = p_value_list[k] - p_value_list[j]
             if abs(delta_p) < 1.0:
-                # p值差距过小,不适合pair
+                # delta_p is too littile, skip this pair
                 continue
             if delta_p > 0:
                 step_1_pairs.append([j, k, delta_p])
