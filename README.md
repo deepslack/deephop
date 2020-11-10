@@ -1,7 +1,5 @@
 # DeepHop
 
-Source code for the ["Deep Scaffold Hopping with Multi-modal Transformer Neural Networks"](https://chemrxiv.org/articles/preprint/Deep_Scaffold_Hopping_with_Multi-modal_Transformer_Neural_Networks/13011767). The code was built based on OpenNMT and DGL. 
-
 DeepHop is a multi-modal molecular transformation framework. It accepts a hit molecule and an interest target protein sequence as inputs and design isofunctional molecular structures to the target compound.
 
 
