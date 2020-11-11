@@ -276,7 +276,7 @@ def mpnn_emb(model, g_loader, ccuda=1):
 
 def gcn_emb(model, gs, device):
     batched_graph = dgl.batch(gs)
-    batched_graph.to(device)
+    batched_graph = batched_graph.to(device)
     graph_encode_emb = model(batched_graph, batched_graph.ndata['init_h'])
     return graph_encode_emb
 
